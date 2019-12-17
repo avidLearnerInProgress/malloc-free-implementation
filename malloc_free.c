@@ -67,7 +67,7 @@ union header{
         unsigned is_free;
         union header *next;
     }s;
-    ALIGN stub;
+    ALIGN stub; //stores the base address of memory block that has to be allocated..!
 };
 typedef union header header_t;
 header_t *head, *tail;
@@ -88,8 +88,8 @@ void malloc(size_t size){
     //First fit approach in searching the linked list
     
     if(head_){ // sufficiently large block found.. mark as not-free
-		// release global lock and return pointer to that block
         head_->s.is_free = 0;
+			// release global lock and return pointer to that block
         pthread_mutex_unlock(&global_malloc_lock);
         return (void*)(head_ + 1); // here, header ptr will refer to header part of block of mem..
     } // (head_ + 1) --> hiding header from the user and returning the memory directly..
@@ -122,7 +122,7 @@ void malloc(size_t size){
     return (void*)(head_ + 1);
 }
 
-head_ *get_free_block(size_t sz){
+header_t *get_free_block(size_t sz){
     head_ *curr = head;
     while(curr){
         if(curr->s.is_free && curr->s.size >= sz){
